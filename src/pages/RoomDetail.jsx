@@ -1,9 +1,15 @@
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import rooms from "../data/rooms";
 
 const RoomDetail = () => {
   const { id } = useParams();
   const room = rooms.find((item) => item.id === id);
+
+  // Tự động scroll lên đầu trang khi vào trang chi tiết
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [id]);
 
   if (!room) {
     return (
@@ -25,6 +31,7 @@ const RoomDetail = () => {
   }
 
   const gallery = room.gallery?.length ? room.gallery : [room.image];
+  const [selectedImage, setSelectedImage] = useState(gallery[0]);
 
   return (
     <section className="bg-gradient-to-b from-amber-50 via-white to-amber-50 min-h-screen py-12">
@@ -52,23 +59,34 @@ const RoomDetail = () => {
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Gallery */}
           <div className="space-y-4 animate-slide-in-left">
+            {/* Ảnh lớn phía trên */}
             <div className="rounded-3xl overflow-hidden shadow-2xl animate-zoom-in">
               <img
-                src={gallery[0]}
+                src={selectedImage}
                 alt={room.name}
-                className="w-full h-96 object-cover"
+                className="w-full h-96 object-cover transition-opacity duration-300"
               />
             </div>
+            {/* Danh sách thumbnail phía dưới */}
             {gallery.length > 1 && (
-              <div className="grid grid-cols-2 gap-4">
-                {gallery.slice(1, 3).map((imgUrl, index) => (
-                  <img
+              <div className="grid grid-cols-3 gap-4">
+                {gallery.map((imgUrl, index) => (
+                  <button
                     key={imgUrl}
-                    src={imgUrl}
-                    alt={`${room.name} ${index + 2}`}
-                    className="rounded-2xl w-full h-48 object-cover shadow-lg hover:scale-105 transition-transform animate-scale-in"
-                    style={{ animationDelay: `${(index + 1) * 0.2}s` }}
-                  />
+                    onClick={() => setSelectedImage(imgUrl)}
+                    className={`rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition-all duration-300 animate-scale-in ${
+                      selectedImage === imgUrl
+                        ? 'ring-4 ring-brand scale-105'
+                        : 'opacity-70 hover:opacity-100'
+                    }`}
+                    style={{ animationDelay: `${(index + 1) * 0.1}s` }}
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={`${room.name} ${index + 1}`}
+                      className="w-full h-32 object-cover"
+                    />
+                  </button>
                 ))}
               </div>
             )}
